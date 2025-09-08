@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoteVault - Elegant Notes & Files Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @keyframes subtle-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Video Background */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      z-index: -1;
+      object-fit: cover;
+    }
+    .card {
+      transition: all 0.4s ease;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation: subtle-float 10s ease-in-out infinite;
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    .file-preview {
+      max-width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-gray-100 overflow-x-hidden">
+  <!-- Video Background -->
+  <video autoplay muted loop playsinline class="video-bg">
+    <source src="https://files.catbox.moe/cgijdz.mp4" type="video/mp4">
+    Browser kamu tidak mendukung video background.
+  </video>
+
+  <!-- Navigation -->
+  <nav class="bg-gray-900 bg-opacity-70 p-5 shadow-lg backdrop-blur-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-3xl font-semibold flex items-center">
+        <i class="fas fa-book mr-3 text-indigo-400"></i>
+        NoteVault
+      </h1>
+      <div class="flex space-x-4">
+        <button onclick="showForm()" class="bg-indigo-600 px-5 py-2 rounded-lg shadow-md hover:shadow-lg transition hover:bg-indigo-700">
+          <i class="fas fa-plus mr-2"></i>Add Entry
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto p-6">
+    <h2 class="text-4xl font-bold mb-8 text-center text-gray-200">Your Notes & Files Collection</h2>
+    <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+    <!-- Add Form Modal -->
+    <div id="add-form" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+      <div class="bg-gray-800 bg-opacity-90 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <h3 class="text-2xl font-semibold mb-6 flex items-center">
+          <i class="fas fa-edit mr-2 text-green-400"></i>Add New Note/File
+        </h3>
+        <form id="note-form" enctype="multipart/form-data">
+          <input type="text" id="note-title" placeholder="Title" class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:border-indigo-500" required>
+          <textarea id="note-content" placeholder="Content" class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:border-indigo-500" rows="4" required></textarea>
+          <input type="file" id="file-upload" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-indigo-500" accept="*/*">
+          <div class="flex justify-end space-x-4">
+            <button type="button" onclick="hideForm()" class="bg-gray-600 px-4 py-2 rounded text-white hover:bg-gray-700">Cancel</button>
+            <button type="submit" class="bg-indigo-600 px-4 py-2 rounded text-white hover:bg-indigo-700 transition">
+              <i class="fas fa-save mr-2"></i>Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let notes = JSON.parse(localStorage.getItem('notes')) || [];
+    function renderNotes() {
+      const container = document.getElementById('notes-container');
+      container.innerHTML = '';
+      notes.forEach((note, index) => {
+        const card = document.createElement('div');
+        card.className = 'card p-6 rounded-lg';
+        card.innerHTML = `
+          <h4 class="text-xl font-bold mb-2 flex items-center">
+            <i class="fas fa-sticky-note mr-2 text-blue-400"></i>${note.title}
+          </h4>
+          <p class="mb-4 text-gray-300">${note.content}</p>
+          ${note.fileData ? `
+            <div class="mb-4">
+              <i class="fas fa-file mr-2 text-green-400"></i>File: ${note.fileName}
+              ${note.fileType && note.fileType.startsWith('image/') 
+                ? `<img src="${note.fileData}" alt="Preview" class="file-preview mt-2 rounded border border-gray-500">` 
+                : `<a href="${note.fileData}" download="${note.fileName}" class="text-indigo-400 underline hover:text-indigo-300">Download</a>`}
+            </div>
+          ` : ''}
+          <button onclick="deleteNote(${index})" class="bg-red-600 px-3 py-1 rounded text-white hover:bg-red-700 transition">
+            <i class="fas fa-trash mr-1"></i>Delete
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+    document.getElementById('note-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('note-title').value;
+      const content = document.getElementById('note-content').value;
+      const fileInput = document.getElementById('file-upload');
+      let fileData = null, fileName = null, fileType = null;
+      if (fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          fileData = event.target.result;
+          fileName = file.name;
+          fileType = file.type;
+          notes.push({ title, content, fileData, fileName, fileType });
+          localStorage.setItem('notes', JSON.stringify(notes));
+          renderNotes();
+          hideForm();
+          document.getElementById('note-form').reset();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        notes.push({ title, content, fileData, fileName, fileType });
+        localStorage.setItem('notes', JSON.stringify(notes));
+        renderNotes();
+        hideForm();
+        document.getElementById('note-form').reset();
+      }
+    });
+    function deleteNote(index) {
+      if (confirm('Are you sure you want to delete this note?')) {
+        notes.splice(index, 1);
+        localStorage.setItem('notes', JSON.stringify(notes));
+        renderNotes();
+      }
+    }
+    function showForm() {
+      document.getElementById('add-form').classList.remove('hidden');
+      document.getElementById('add-form').classList.add('flex');
+    }
+    function hideForm() {
+      document.getElementById('add-form').classList.add('hidden');
+      document.getElementById('add-form').classList.remove('flex');
+    }
+    renderNotes();
+  </script>
+</body>
+</html>
