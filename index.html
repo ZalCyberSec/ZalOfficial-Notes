@@ -96,30 +96,30 @@
   <script>
     let notes = JSON.parse(localStorage.getItem('notes')) || [];
     function renderNotes() {
-      const container = document.getElementById('notes-container');
-      container.innerHTML = '';
-      notes.forEach((note, index) => {
-        const card = document.createElement('div');
-        card.className = 'card p-6 rounded-lg';
-        card.innerHTML = `
-          <h4 class="text-xl font-bold mb-2 flex items-center">
-            <i class="fas fa-sticky-note mr-2 text-blue-400"></i>${note.title}
-          </h4>
-          <p class="mb-4 text-gray-300">${note.content}</p>
-          ${note.fileData ? `
-            <div class="mb-4">
-              <i class="fas fa-file mr-2 text-green-400"></i>File: ${note.fileName}
-              ${note.fileType && note.fileType.startsWith('image/') 
-                ? `<img src="${note.fileData}" alt="Preview" class="file-preview mt-2 rounded border border-gray-500">` 
-                : `<a href="${note.fileData}" download="${note.fileName}" class="text-indigo-400 underline hover:text-indigo-300">Download</a>`}
-            </div>
-          ` : ''}
-          <button onclick="deleteNote(${index})" class="bg-red-600 px-3 py-1 rounded text-white hover:bg-red-700 transition">
-            <i class="fas fa-trash mr-1"></i>Delete
-          </button>
-        `;
-        container.appendChild(card);
-      });
+  const container = document.getElementById('notes-container');
+  container.innerHTML = '';
+  notes.forEach((note, index) => {
+    const card = document.createElement('div');
+    card.className = 'card p-6 rounded-lg';
+    card.innerHTML = `
+      <h4 class="text-xl font-bold mb-2 flex items-center">
+        <i class="fas fa-sticky-note mr-2 text-blue-400"></i>${note.title}
+      </h4>
+      <p class="mb-4 text-gray-300 whitespace-pre-wrap">${note.content}</p>
+      ${note.fileData ? `
+        <div class="mb-4">
+          <i class="fas fa-file mr-2 text-green-400"></i>File: ${note.fileName}
+          ${note.fileType && note.fileType.startsWith('image/') 
+            ? `<img src="${note.fileData}" alt="Preview" class="file-preview mt-2 rounded border border-gray-500">` 
+            : `<a href="${note.fileData}" download="${note.fileName}" class="text-indigo-400 underline hover:text-indigo-300">Download</a>`}
+        </div>
+      ` : ''}
+      <button onclick="deleteNote(${index})" class="bg-red-600 px-3 py-1 rounded text-white hover:bg-red-700 transition">
+        <i class="fas fa-trash mr-1"></i>Delete
+      </button>
+    `;
+    container.appendChild(card);
+  });
     }
     document.getElementById('note-form').addEventListener('submit', function(e) {
       e.preventDefault();
